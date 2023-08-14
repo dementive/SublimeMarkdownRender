@@ -1,4 +1,7 @@
 import re
+import os
+from sublime import packages_path
+import urllib.request
 
 
 def parse_header(line):
@@ -23,7 +26,7 @@ def parse_lists(line):
     # Identify and convert markdown lists to HTML lists
     indentation = 0
     for i in range(get_indentation_level(line)):
-        indentation += 5
+        indentation += 7
     match = re.match(r"^(\t*|\s*)([*+-]|\d+\.)\s(.+)", line)
     if match:
         list_type = match.group(2)
@@ -31,7 +34,7 @@ def parse_lists(line):
         list_character = "•"
         if re.match(r"^\d+\.", list_type):
             list_character = list_type
-        list_item = f'<p id="markdown-list-item" style="padding-left: {indentation}px;">{list_character} {text}</p>'
+        list_item = f'<p id="markdown-list-item" style="padding-left: {indentation}px; margin-top: 0; margin-bottom: 0;">{list_character} {text}</p>'
         return list_item
     return line
 
@@ -141,11 +144,19 @@ def parse_image(line):
     if match:
         alt_text = match.group(1)
         src = match.group(2)
-        if "http" in src:
-            prefix = "data:"
-        else:
-            prefix = "file://"
-        return f'<img src="{prefix}{src}" alt="{alt_text}">'
+        if (
+            src.endswith(".png")
+            or src.endswith(".jpeg")
+            or src.endswith(".jpg")
+            or src.endswith(".gif")
+        ):
+            file_name = src.replace("\\", "/").rstrip("/").rpartition("/")[2]
+            file_path = os.path.join(packages_path(), "MarkdownRender", "ImageCache/")
+            full_path = file_path + file_name
+            urllib.request.urlretrieve(src, full_path)
+            if os.path.exists(full_path):
+                src = full_path
+        return f'<img src="file://{src}" alt="{alt_text}">'
     return line
 
 
@@ -178,13 +189,12 @@ def parse_markdown(markdown):
         line = parse_quoted_text(line)
         parsed_lines.append(line)
 
-    return "\n".join(parsed_lines).replace("\n\n", "\n")
+    lines = "\n".join(parsed_lines).replace("\n\n", "\n")
+    return lines.replace("\n", "<br>")
 
 
 # Usage example:
 markdown = """
-This is a paragraph
-it can be multiple lines
 <!-- This content will not appear in the rendered Markdown -->
 # Heading 1
 ## Heading 2
@@ -214,9 +224,14 @@ This is a block of code!
 def hello():
     return "hi"
 ```
-![Image Name](https://myoctocat.com/assets/images/base-octocat.svg)
+![Image Name](https://www.artic.edu/iiif/2//18092196-50ae-3ff1-9205-1b3110e966c3/full/843,/0/default.jpg)
 [Link](https://www.example.com)
+
+
+This is a paragraph
+
+it can be multiple lines
 """
 
 minihtml_output = parse_markdown(markdown)
-print(minihtml_output)
+# print(minihtml_output)
