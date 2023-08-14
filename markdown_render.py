@@ -11,10 +11,18 @@ class MarkdownRenderCommand(sublime_plugin.WindowCommand):
         if view is None:
             return
         filename = view.file_name()
-        if filename is not None and not filename.endswith(".md"):
+        if filename is None:
+            return
+        if not filename.endswith(".md"):
             return
         markdown_content = view.substr(sublime.Region(0, view.size()))
         html_content = parse_markdown(markdown_content)
 
         # Create a new HTML sheet
-        self.window.new_html_sheet("New sheet", html_content)
+        name = (
+            filename.replace(".md", "")
+            .replace("\\", "/")
+            .rstrip("/")
+            .rpartition("/")[2]
+        )
+        self.window.new_html_sheet(name, html_content)

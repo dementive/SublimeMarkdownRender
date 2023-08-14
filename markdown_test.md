@@ -1,13 +1,17 @@
 This is a paragraph
-    it can be multiple lines
+it can be multiple lines
 <!-- This content will not appear in the rendered Markdown -->
 # Heading 1
 ## Heading 2
 - List item 1
 - List item 2
-+ List item 3
-* List item 4
+    + List item 3
+        - List item 4
+        - List item 5
+* List item 6
 1. First item
+    1. Hello
+    2. Hi
 2. Second item 
 3. Third item
 - [x] #739
@@ -20,8 +24,8 @@ This is a paragraph
 <sub>This is subscript</sub>
 <sup>This is superscript</sup>
 > This is a quote - Unknown
-```
-This is a block of code!
+```python
+# This is a block of code!
 def hello():
     return "hi"
 ```
