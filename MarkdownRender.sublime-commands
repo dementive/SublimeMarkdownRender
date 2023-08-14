@@ -1,0 +1,3 @@
+[
+	{ "caption": "Render Markdown", "command": "markdown_render" },
+]
