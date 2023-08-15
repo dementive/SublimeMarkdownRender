@@ -3,9 +3,13 @@ import os
 from sublime import packages_path
 import urllib.request
 
+INDENTATION_AMOUNT = 7
 
-def parse_header(line):
+
+def parse_header(line, inside_code_block):
     # Identify and extract header text and level
+    if inside_code_block:
+        return line
     match = re.match(r"^(#+)\s(.+)", line)
     if match:
         level = len(match.group(1))
@@ -26,7 +30,7 @@ def parse_lists(line):
     # Identify and convert markdown lists to HTML lists
     indentation = 0
     for i in range(get_indentation_level(line)):
-        indentation += 7
+        indentation += INDENTATION_AMOUNT
     match = re.match(r"^(\t*|\s*)([*+-]|\d+\.)\s(.+)", line)
     if match:
         list_type = match.group(2)
@@ -69,61 +73,6 @@ def parse_quoted_text(line):
         text = match.group(1)
         return f'<div id="markdown-quote">{text}</div>'
     return line
-
-
-def parse_code_blocks(text):
-    # TODO - Code blocks should be highlighted properly in html output just like in sublime if possible.
-    # Not really sure how to go about this since minihtml doesn't exactly support syntax highlighting like a normal sheet in sublime would
-    # All of the potential code block syntax embeddings can be found in the sublime markdown syntax and are as follows
-    # actionscript|as
-    # applescript|osascript
-    # clojure|clj
-    # c|h
-    # c\+\+|cc|cpp|cxx|h\+\+|hpp|hxx
-    # csharp|c\#|cs
-    # css
-    # diff|patch
-    # bat|cmd|dos
-    # erlang|escript
-    # graphviz
-    # go(?:lang)?
-    # haskell
-    # html\+php
-    # html
-    # java
-    # javascript|js
-    # jsonc?
-    # jspx?
-    # jsx
-    # lisp
-    # lua
-    # makefile
-    # matlab
-    # objc|obj-c|objectivec|objective-c
-    # objc\+\+|obj-c\+\+|objectivec\+\+|objective-c\+\+
-    # ocaml
-    # perl
-    # php|inc
-    # python|py
-    # regexp?
-    # rscript|r|splus
-    # ruby|rb|rbx
-    # rust|rs
-    # scala
-    # console|shell
-    # shell-script|sh|bash|zsh
-    # sql
-    # tsx
-    # typescript|ts
-    # atom|plist|svg|xjb|xml|xsd|xsl
-    # yaml|yml
-    subbed = re.sub(
-        r"```([^`]+)```",
-        r'<div id="markdown-code-block">\1</div>',
-        text,
-        flags=re.DOTALL,
-    )
-    return subbed
 
 
 def parse_task_list(line):
@@ -170,16 +119,83 @@ def parse_comments(text):
     return cleaned_text
 
 
+def parse_code_block(line, inside_code_block):
+    # Start or end of code block
+    # TODO - Code blocks should be highlighted properly in html output just like in sublime if possible.
+    # Not really sure how to go about this since minihtml doesn't exactly support syntax highlighting like a normal sheet in sublime would
+    # All of the potential code block syntax embeddings can be found in the sublime markdown syntax and are as follows
+    # actionscript|as
+    # applescript|osascript
+    # clojure|clj
+    # c|h
+    # c\+\+|cc|cpp|cxx|h\+\+|hpp|hxx
+    # csharp|c\#|cs
+    # css
+    # diff|patch
+    # bat|cmd|dos
+    # erlang|escript
+    # graphviz
+    # go(?:lang)?
+    # haskell
+    # html\+php
+    # html
+    # java
+    # javascript|js
+    # jsonc?
+    # jspx?
+    # jsx
+    # lisp
+    # lua
+    # makefile
+    # matlab
+    # objc|obj-c|objectivec|objective-c
+    # objc\+\+|obj-c\+\+|objectivec\+\+|objective-c\+\+
+    # ocaml
+    # perl
+    # php|inc
+    # python|py
+    # regexp?
+    # rscript|r|splus
+    # ruby|rb|rbx
+    # rust|rs
+    # scala
+    # console|shell
+    # shell-script|sh|bash|zsh
+    # sql
+    # tsx
+    # typescript|ts
+    # atom|plist|svg|xjb|xml|xsd|xsl
+    # yaml|yml
+
+    indentation = 0
+    for i in range(get_indentation_level(line)):
+        indentation += INDENTATION_AMOUNT
+
+    if re.match(r"^```(\w+)?$", line):
+        if inside_code_block:
+            return "</code></div>", False
+        return '<div id="markdown-code-block"><code>', True
+    # Code line
+    if inside_code_block:
+        return (
+            f'<code style="padding-left: {indentation}">{line}</code>',
+            inside_code_block,
+        )
+    return line, inside_code_block
+
+
 def parse_markdown(markdown):
     markdown = parse_comments(markdown)
-    markdown = parse_code_blocks(markdown)
+    # markdown = parse_code_blocks(markdown)
 
     parsed_lines = []
+    inside_code_block = False
     lines = markdown.split("\n")
 
     for line in lines:
         # Load order here is important
-        line = parse_header(line)
+        line, inside_code_block = parse_code_block(line, inside_code_block)
+        line = parse_header(line, inside_code_block)
         line = parse_task_list(line)
         line = parse_lists(line)
         line = parse_emphasis(line)
@@ -220,7 +236,7 @@ markdown = """
 <sup>This is superscript</sup>
 > This is a quote - Unknown
 ```
-This is a block of code!
+# This is a block of code!
 def hello():
     return "hi"
 ```
@@ -233,5 +249,5 @@ This is a paragraph
 it can be multiple lines
 """
 
-minihtml_output = parse_markdown(markdown)
+# minihtml_output = parse_markdown(markdown)
 # print(minihtml_output)
