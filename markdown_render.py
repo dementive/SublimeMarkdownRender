@@ -58,3 +58,7 @@ class MarkDownRenderListener(sublime_plugin.EventListener):
     def on_post_save_async(self, view):
         if settings.get("render_markdown_on_save") is True:
             sublime.active_window().run_command("markdown_render")
+
+    def on_activated_async(self, view):
+        if settings.get("render_markdown_on_load") is True:
+            sublime.active_window().run_command("markdown_render")

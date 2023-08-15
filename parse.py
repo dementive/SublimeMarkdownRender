@@ -169,6 +169,7 @@ def parse_comments(text):
 
 
 def parse_markdown(markdown, view):
+    markdown = markdown.replace("\t", "    ")
     markdown = parse_comments(markdown)
     parsed_lines = []
     inside_code_block = False
