@@ -23,7 +23,7 @@ Files with .md extensions can be viewed directly in sublime with a style very si
 A new `Render Markdown` command has been added to the command palette that can be used to render any currently opened markdown file.
 
 
-There 2 are settings that can be set to have the rendered view change when a .md file is saved or when it is activated.
+There 2 are settings that can be set to have the rendered view change when a .md file is saved or when it is activated. There is another settings that will have a newly rendered markdown file open in the same group as the currently opened tab.
 
 
 The markdown parser is based on [Github Flavored Markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax). The parsing is done in regex and it is optimized for speed...of writing...which means it is very slow but only took me a few hours to make. However, it performs good enough in my testing and you will not have any performance issues with small files but with 1000+ line markdown files you might notice slowdowns.
