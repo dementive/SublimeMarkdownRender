@@ -1,7 +1,8 @@
 import re
 import os
-from sublime import packages_path
+import sublime
 import urllib.request
+from .css.css import CSS
 
 INDENTATION_AMOUNT = 7
 
@@ -12,10 +13,9 @@ def parse_header(line, inside_code_block):
         return line
     match = re.match(r"^(#+)\s(.+)", line)
     if match:
-        level = len(match.group(1))
+        level = min(len(match.group(1)), 6)
         text = match.group(2)
-        if level < 6:
-            return f"<h{level}>{text}</h{level}>"
+        return f"<h{level}>{text}</h{level}>"
     return line
 
 
@@ -56,7 +56,7 @@ def parse_emphasis(line):
     line = re.sub(r"(__)([^_]+)(__)", r"<strong>\2</strong>", line)
     line = re.sub(r"(_)([^_]+)(_)", r"<em>\2</em>", line)
     line = re.sub(
-        r"(\~\~)([^\~]+)(\~\~)", r"<div id=\"markdown-strikethrough\">\2</del>", line
+        r"(\~\~)([^\~]+)(\~\~)", r"<div id=\"markdown-strikethrough\">\2</div>", line
     )
     return line
 
@@ -71,24 +71,37 @@ def parse_quoted_text(line):
     match = re.match(r"^>\s*(.+)", line)
     if match:
         text = match.group(1)
-        return f'<div id="markdown-quote">{text}</div>'
+        return f'<div id="markdown-quote"><tt id="blockquote">{text}</tt></div>'
     return line
 
 
 def parse_task_list(line):
     # Identify and convert markdown task lists to HTML with specific div IDs for completed and incomplete tasks
     match = re.match(r"^- \[(x|X)\] (.+)", line)
+    checked_image = os.path.join(
+        sublime.packages_path(), "MarkdownRender", "css", "styles/checkbox.png"
+    )
+    unchecked_image = os.path.join(
+        sublime.packages_path(),
+        "MarkdownRender",
+        "css",
+        "styles/checkbox_incomplete.png",
+    )
     if match:
         text = match.group(2)
-        return f'<div id="markdown-task-completed">{text}</div>'
+        return f'<div id="markdown-task-completed"><img src="file://{checked_image}" alt="[Completed Task]" width="22" height="22"> {text}</div>'
     match = re.match(r"^- \[ \] (.+)", line)
     if match:
         text = match.group(1)
-        return f'<div id="markdown-task-incomplete">{text}</div>'
+        return f'<div id="markdown-task-incomplete"><img src="file://{unchecked_image}" alt="[Completed Task]" width="22" height="22"> {text}</div>'
     return line
 
 
-def parse_image(line):
+def get_last_dir(string):
+    return string.replace("\\", "/").rstrip("/").rpartition("/")[0]
+
+
+def parse_image(line, view):
     match = re.match(r"^!\[([^]]+)\]\(([^)]+)\)$", line)
     if match:
         alt_text = match.group(1)
@@ -100,81 +113,48 @@ def parse_image(line):
             or src.endswith(".gif")
         ):
             file_name = src.replace("\\", "/").rstrip("/").rpartition("/")[2]
-            file_path = os.path.join(packages_path(), "MarkdownRender", "ImageCache/")
+            file_path = os.path.join(
+                sublime.packages_path(), "MarkdownRender", "ImageCache/"
+            )
             full_path = file_path + file_name
-            urllib.request.urlretrieve(src, full_path)
+            if src.startswith("http://") or src.startswith("https://"):
+                urllib.request.urlretrieve(src, full_path)
             if os.path.exists(full_path):
                 src = full_path
+            if src.startswith("...."):
+                view_directory = get_last_dir(
+                    get_last_dir(get_last_dir(get_last_dir(view.file_name())))
+                )
+                src = view_directory + src.partition("....")[2]
+            elif src.startswith("..."):
+                view_directory = get_last_dir(
+                    get_last_dir(get_last_dir(view.file_name()))
+                )
+                print(view_directory)
+                src = view_directory + src.partition("...")[2]
+            elif src.startswith(".."):
+                view_directory = get_last_dir(get_last_dir(view.file_name()))
+                src = view_directory + src.partition("..")[2]
+            elif src.startswith("."):
+                view_directory = (
+                    view.file_name().replace("\\", "/").rstrip("/").rpartition("/")[0]
+                )
+                src = view_directory + src.partition(".")[2]
         return f'<img src="file://{src}" alt="{alt_text}">'
     return line
 
 
-def parse_comments(text):
-    # pattern to match Markdown comments
-    pattern = r"<!--.*?-->"
-
-    # replace Markdown comments with an empty string
-    cleaned_text = re.sub(pattern, "", text, flags=re.DOTALL)
-
-    return cleaned_text
-
-
 def parse_code_block(line, inside_code_block):
-    # Start or end of code block
-    # TODO - Code blocks should be highlighted properly in html output just like in sublime if possible.
-    # Not really sure how to go about this since minihtml doesn't exactly support syntax highlighting like a normal sheet in sublime would
-    # All of the potential code block syntax embeddings can be found in the sublime markdown syntax and are as follows
-    # actionscript|as
-    # applescript|osascript
-    # clojure|clj
-    # c|h
-    # c\+\+|cc|cpp|cxx|h\+\+|hpp|hxx
-    # csharp|c\#|cs
-    # css
-    # diff|patch
-    # bat|cmd|dos
-    # erlang|escript
-    # graphviz
-    # go(?:lang)?
-    # haskell
-    # html\+php
-    # html
-    # java
-    # javascript|js
-    # jsonc?
-    # jspx?
-    # jsx
-    # lisp
-    # lua
-    # makefile
-    # matlab
-    # objc|obj-c|objectivec|objective-c
-    # objc\+\+|obj-c\+\+|objectivec\+\+|objective-c\+\+
-    # ocaml
-    # perl
-    # php|inc
-    # python|py
-    # regexp?
-    # rscript|r|splus
-    # ruby|rb|rbx
-    # rust|rs
-    # scala
-    # console|shell
-    # shell-script|sh|bash|zsh
-    # sql
-    # tsx
-    # typescript|ts
-    # atom|plist|svg|xjb|xml|xsd|xsl
-    # yaml|yml
-
+    if not line:
+        return "", False
     indentation = 0
     for i in range(get_indentation_level(line)):
         indentation += INDENTATION_AMOUNT
-
-    if re.match(r"^```(\w+)?$", line):
+    match = re.match(r"^```(\w+)?$", line)
+    if match:
         if inside_code_block:
-            return "</code></div>", False
-        return '<div id="markdown-code-block"><code>', True
+            return "</code></div></div><br>", False
+        return '<div class="box-for-codebox"><div class="codebox"><code>', True
     # Code line
     if inside_code_block:
         return (
@@ -184,13 +164,16 @@ def parse_code_block(line, inside_code_block):
     return line, inside_code_block
 
 
-def parse_markdown(markdown):
-    markdown = parse_comments(markdown)
-    # markdown = parse_code_blocks(markdown)
+def parse_comments(text):
+    return re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
 
+
+def parse_markdown(markdown, view):
+    markdown = parse_comments(markdown)
     parsed_lines = []
     inside_code_block = False
     lines = markdown.split("\n")
+    css = CSS()
 
     for line in lines:
         # Load order here is important
@@ -199,14 +182,22 @@ def parse_markdown(markdown):
         line = parse_task_list(line)
         line = parse_lists(line)
         line = parse_emphasis(line)
-        line = parse_image(line)
+        line = parse_image(line, view)
         line = parse_links(line)
         line = parse_tags(line)
         line = parse_quoted_text(line)
         parsed_lines.append(line)
 
-    lines = "\n".join(parsed_lines).replace("\n\n", "\n")
-    return lines.replace("\n", "<br>")
+    lines = "\n".join(parsed_lines).replace("\n\n", "\n").replace("\n", "<br>")
+    html = f"""
+    <body id=markdown-render-body>
+        <style>
+            {css.default}
+        </style>
+        {lines}
+    </body>
+    """
+    return html
 
 
 # Usage example:
@@ -248,6 +239,3 @@ This is a paragraph
 
 it can be multiple lines
 """
-
-# minihtml_output = parse_markdown(markdown)
-# print(minihtml_output)

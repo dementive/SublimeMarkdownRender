@@ -24,13 +24,16 @@ class MarkdownRenderCommand(sublime_plugin.WindowCommand):
         if not filename.endswith(".md"):
             return
 
+        sublime.set_timeout_async(lambda: self.run_async(view, filename), 0)
+
+    def run_async(self, view, filename):
         current_sheets = self.window.sheets()
         for i in opened_sheets:
             if i not in current_sheets:
                 opened_sheets.remove(i)
 
         markdown_content = view.substr(sublime.Region(0, view.size()))
-        html_content = parse_markdown(markdown_content)
+        html_content = parse_markdown(markdown_content, view)
 
         name = (
             filename.replace(".md", "")
