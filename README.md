@@ -46,6 +46,14 @@ These are the currently implemented markdown features, not all of them are done 
 
 # Todo Markdown Features
 
+These are markdown features that are possible to implement in sublime but are not part of the plugin yet.
+
 - [Section links](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#section-links)
 - [Footnotes](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
 - [Alerts](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
+
+
+# Contributing
+
+The plugin currently does everything I need it to do, so it is unlikely I will be making many new changes myself.
+With that said, if you want to make improvements or changes pull requests are welcome and if you run into any problems open up an issue.
