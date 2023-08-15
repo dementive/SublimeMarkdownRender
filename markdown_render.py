@@ -47,9 +47,12 @@ class MarkdownRenderCommand(sublime_plugin.WindowCommand):
                 i.set_contents(html_content)
                 content_set = True
         if content_set is False:
-            sheet = self.window.new_html_sheet(
-                name, html_content, flags=sublime.ADD_TO_SELECTION
-            )
+            if settings.get("add_new_markdown_sheet_to_current_group"):
+                sheet = self.window.new_html_sheet(
+                    name, html_content, flags=sublime.ADD_TO_SELECTION
+                )
+            else:
+                sheet = self.window.new_html_sheet(name, html_content)
             setattr(sheet, "name", name)
             opened_sheets.append(sheet)
 
@@ -60,5 +63,5 @@ class MarkDownRenderListener(sublime_plugin.EventListener):
             sublime.active_window().run_command("markdown_render")
 
     def on_activated_async(self, view):
-        if settings.get("render_markdown_on_load") is True:
+        if settings.get("render_markdown_on_activated") is True:
             sublime.active_window().run_command("markdown_render")

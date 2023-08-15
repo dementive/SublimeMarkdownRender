@@ -56,4 +56,11 @@ These are markdown features that are possible to implement in sublime but are no
 # Contributing
 
 The plugin currently does everything I need it to do, so it is unlikely I will be making many new changes myself.
+
+
 With that said, if you want to make improvements or changes pull requests are welcome and if you run into any problems open up an issue.
+
+
+![Image1](./assets/image1.png)
+![Image2](./assets/image2.png)
+![Image3](./assets/image3.png)
