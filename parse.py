@@ -55,15 +55,13 @@ def parse_emphasis(line):
     line = re.sub(r"(\*)([^*]+)(\*)", r"<em>\2</em>", line)
     line = re.sub(r"(__)([^_]+)(__)", r"<strong>\2</strong>", line)
     line = re.sub(r"(_)([^_]+)(_)", r"<em>\2</em>", line)
-    line = re.sub(
-        r"(\~\~)([^\~]+)(\~\~)", r"<div id=\"markdown-strikethrough\">\2</div>", line
-    )
+    line = re.sub(r"(\~\~)([^\~]+)(\~\~)", r"<small><i>\2</i></small>", line)
     return line
 
 
 def parse_links(line):
     # Identify and convert links ([text](url) -> <a href="url">text</a>)
-    line = re.sub(r"\[(.*?)\]\((.*?)\)", r'<a href="\2">\1</a>', line)
+    line = re.sub(r"\[(.*?)\]\((.*?)\)", r'<a href="\2" title="\2">\1</a>', line)
     return line
 
 

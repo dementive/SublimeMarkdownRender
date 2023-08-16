@@ -38,7 +38,7 @@ These are the currently implemented markdown features, not all of them are done 
 - [Text Styling](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#styling-text)
 - [Quoting Text](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#quoting-text) (single ticks are TODO still)
 - [Links](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#links)
-- [Images](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images) - Only png, jpg, and gif files can be rendered in sublime but it will work with url links or file paths.
+- [Images](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#images)
 - [Lists](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#lists)
 - [Nested Lists](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#nested-lists) - Still needs some improvement so each nesting level shows a different character for unordered lists.
 - [Task Lists](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#task-lists)
@@ -48,10 +48,23 @@ These are the currently implemented markdown features, not all of them are done 
 
 These are markdown features that are possible to implement in sublime but are not part of the plugin yet.
 
+
 - [Section links](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#section-links)
 - [Footnotes](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#footnotes)
 - [Alerts](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
 
+# Limitations
+
+Sublime text uses [minihtml](https://www.sublimetext.com/docs/minihtml.html) which has a very limited amount of css properties and html tags. This makes it challenging to correctly render markdown, some things that are easy in html aren't possible with minihtml. Most of this can be worked around in some way but others will appear different than typical markdown rendering.
+
+
+- Strikthrough text - There is no support for this in minihtml so it will render as small text with italics instead.
+
+- Codeblocks - Syntax highlighting in minihtml isn't really possible and the css for code blocks is kinda weird right now.
+
+- Invalid html - If your markdown file has html tags in it then it will likely not render the tags correctly because sublime will think it is minihtml when the text is showed in the html sheet.
+
+- Only png, jpg, and gif files can be rendered in sublime.
 
 # Contributing
 
