@@ -1,5 +1,5 @@
 {
 	"add_new_markdown_sheet_to_current_group": true,
-	"render_markdown_on_save": false,
+	"render_markdown_on_save": true,
 	"render_markdown_on_activated": false,
 }
