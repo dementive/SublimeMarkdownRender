@@ -8,6 +8,6 @@ class CSS:
         self.get_styles()
 
     def get_styles(self):
-        default_path = packages_path() + "/MarkdownRender/css/styles/default.css"
+        default_path = packages_path().replace("\\", "/") + "/MarkdownRender/css/styles/default.css"
         with open(default_path, "r") as file:
             self.default = file.read()

@@ -77,10 +77,10 @@ def parse_task_list(line):
     # Identify and convert markdown task lists to HTML with specific div IDs for completed and incomplete tasks
     match = re.match(r"^- \[(x|X)\] (.+)", line)
     checked_image = os.path.join(
-        sublime.packages_path(), "MarkdownRender", "css", "styles/checkbox.png"
+        sublime.packages_path().replace("\\", "/"), "MarkdownRender", "css", "styles/checkbox.png"
     )
     unchecked_image = os.path.join(
-        sublime.packages_path(),
+        sublime.packages_path().replace("\\", "/"),
         "MarkdownRender",
         "css",
         "styles/checkbox_incomplete.png",
@@ -112,7 +112,7 @@ def parse_image(line, view):
         ):
             file_name = src.replace("\\", "/").rstrip("/").rpartition("/")[2]
             file_path = os.path.join(
-                sublime.packages_path(), "MarkdownRender", "ImageCache/"
+                sublime.packages_path().replace("\\", "/"), "MarkdownRender", "ImageCache/"
             )
             full_path = file_path + file_name
             if src.startswith("http://") or src.startswith("https://"):
